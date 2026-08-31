@@ -1,7 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const BondhuApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
+  runZonedGuarded(
+    () {
+      runApp(const BondhuApp());
+    },
+    (error, stackTrace) {
+      debugPrint('Bondhu startup error: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    },
+  );
 }
 
 class BondhuApp extends StatelessWidget {
