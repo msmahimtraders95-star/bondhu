@@ -31,47 +31,21 @@ jobs:
       - name: Check Flutter
         run: flutter --version
 
-      - name: Search for Android V1 embedding
+      - name: Regenerate Android project
         run: |
-          set +e
+          set -e
 
           echo "========================================"
-          echo "SEARCHING FOR ANDROID V1 EMBEDDING"
+          echo "CREATING MODERN ANDROID PROJECT"
           echo "========================================"
 
-          echo ""
-          echo "Searching FlutterActivity..."
-          grep -Rni --exclude-dir=.git \
-            "io.flutter.app.FlutterActivity" . || true
+          rm -rf android
 
-          echo ""
-          echo "Searching FlutterApplication..."
-          grep -Rni --exclude-dir=.git \
-            "io.flutter.app.FlutterApplication" . || true
-
-          echo ""
-          echo "Searching PluginRegistry.Registrar..."
-          grep -Rni --exclude-dir=.git \
-            "PluginRegistry.Registrar" . || true
-
-          echo ""
-          echo "Searching flutterEmbedding..."
-          grep -Rni --exclude-dir=.git \
-            "flutterEmbedding" . || true
-
-          echo ""
-          echo "Searching old Flutter embedding packages..."
-          grep -Rni --exclude-dir=.git \
-            "io.flutter.embedding" android || true
-
-          echo ""
-          echo "Android Java/Kotlin files:"
-          find android -type f \( -name "*.java" -o -name "*.kt" \) -print || true
-
-          echo ""
-          echo "========================================"
-          echo "V1 SEARCH COMPLETED"
-          echo "========================================"
+          flutter create \
+            --platforms=android \
+            --org com.bondhu \
+            --project-name bondhu \
+            .
 
       - name: Get dependencies
         run: flutter pub get
@@ -86,4 +60,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bondhu-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apkapk
