@@ -47,6 +47,16 @@ jobs:
             --project-name bondhu \
             .
 
+      - name: Remove default Flutter test
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "REMOVING DEFAULT WIDGET TEST"
+          echo "========================================"
+
+          rm -f test/widget_test.dart
+
       - name: Get dependencies
         run: flutter pub get
 
@@ -60,4 +70,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bondhu-release-apk
-          path: build/app/outputs/flutter-apk/app-release.apkapk
+          path: build/app/outputs/flutter-apk/app-release.apk
