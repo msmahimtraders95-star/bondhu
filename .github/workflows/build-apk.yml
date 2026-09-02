@@ -31,10 +31,15 @@ jobs:
       - name: Check Flutter
         run: |
           set -e
+
+          echo "========================================"
+          echo "CHECKING FLUTTER AND JAVA"
+          echo "========================================"
+
           flutter --version
           java -version
 
-      - name: Regenerate modern Android project
+      - name: Regenerate Android project
         run: |
           set -e
 
@@ -50,9 +55,15 @@ jobs:
             --project-name bondhu \
             .
 
+          echo "Android project created successfully."
+
       - name: Remove default Flutter test
         run: |
           set -e
+
+          echo "========================================"
+          echo "REMOVING DEFAULT TEST"
+          echo "========================================"
 
           rm -f test/widget_test.dart
 
@@ -98,7 +109,6 @@ jobs:
               buildTypes {
                   release {
                       signingConfig signingConfigs.release
-
                       minifyEnabled false
                       shrinkResources false
                   }
@@ -109,6 +119,8 @@ jobs:
               source = '../..'
           }
           EOF
+
+          echo "Android application configured."
 
       - name: Create release signing key
         run: |
@@ -130,7 +142,7 @@ jobs:
             -keypass BondhuRelease2026 \
             -dname "CN=Bondhu, OU=Bondhu, O=Bondhu, L=Dhaka, ST=Dhaka, C=BD"
 
-          echo "Release key created successfully."
+          echo "Release signing key created."
 
       - name: Verify Android configuration
         run: |
@@ -142,14 +154,48 @@ jobs:
 
           test -f android/app/build.gradle
           test -f android/app/src/main/AndroidManifest.xml
-          test -f android/app/src/main/kotlin/com/bondhu/app/MainActivity.kt
           test -f android/bondhu-release-key.jks
 
-          grep -q "com.bondhu.app" android/app/build.gradle
-          grep -q "minSdk = 23" android/app/build.gradle
-          grep -q "versionName = '1.0.1'" android/app/build.gradle
+          MAIN_ACTIVITY=$(find android/app/src/main/kotlin \
+            -name MainActivity.kt \
+            -type f | head -n 1)
 
-          echo "Android configuration verified."
+          if [ -z "$MAIN_ACTIVITY" ]; then
+            echo "ERROR: MainActivity.kt not found."
+            exit 1
+          fi
+
+          echo "MainActivity found:"
+          echo "$MAIN_ACTIVITY"
+
+          echo ""
+          echo "Checking application ID..."
+
+          grep -q "applicationId = 'com.bondhu.app'" \
+            android/app/build.gradle
+
+          echo "Application ID verified."
+
+          echo ""
+          echo "Checking minimum SDK..."
+
+          grep -q "minSdk = 23" \
+            android/app/build.gradle
+
+          echo "Minimum SDK verified."
+
+          echo ""
+          echo "Checking version..."
+
+          grep -q "versionName = '1.0.1'" \
+            android/app/build.gradle
+
+          echo "Version verified."
+
+          echo ""
+          echo "========================================"
+          echo "ANDROID CONFIGURATION VERIFIED"
+          echo "========================================"
 
       - name: Get dependencies
         run: |
@@ -186,6 +232,8 @@ jobs:
             --release \
             --target-platform android-arm,android-arm64
 
+          echo "Release APK build completed."
+
       - name: Verify APK exists
         run: |
           set -e
@@ -196,11 +244,13 @@ jobs:
 
           APK="build/app/outputs/flutter-apk/app-release.apk"
 
-          test -f "$APK"
+          if [ ! -f "$APK" ]; then
+            echo "ERROR: APK file was not created."
+            exit 1
+          fi
 
+          echo "APK found:"
           ls -lh "$APK"
-
-          echo "APK found successfully."
 
       - name: Verify APK alignment
         run: |
@@ -217,9 +267,12 @@ jobs:
             -type f | sort -V | tail -n 1)
 
           if [ -z "$ZIPALIGN" ]; then
-            echo "ERROR: zipalign not found."
+            echo "ERROR: zipalign was not found."
             exit 1
           fi
+
+          echo "Using:"
+          echo "$ZIPALIGN"
 
           "$ZIPALIGN" -c -v 4 "$APK"
 
@@ -240,9 +293,12 @@ jobs:
             -type f | sort -V | tail -n 1)
 
           if [ -z "$APKSIGNER" ]; then
-            echo "ERROR: apksigner not found."
+            echo "ERROR: apksigner was not found."
             exit 1
           fi
+
+          echo "Using:"
+          echo "$APKSIGNER"
 
           "$APKSIGNER" verify --verbose "$APK"
 
@@ -258,6 +314,7 @@ jobs:
 
           APK="build/app/outputs/flutter-apk/app-release.apk"
 
+          echo "File:"
           ls -lh "$APK"
 
           echo ""
@@ -265,11 +322,17 @@ jobs:
           sha256sum "$APK"
 
           echo ""
-          echo "APK verification completed successfully."
+          echo "APK information completed."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: bondhu-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: errorerror
+          if-no-files-found: error
+
+      - name: Build completed
+        run: |
+          echo "========================================"
+          echo "BONDHU APK BUILD SUCCESSFUL"
+          echo "========================================"
