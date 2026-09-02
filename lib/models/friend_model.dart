@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum FriendStatus {
   pending,
   accepted,
@@ -100,13 +98,21 @@ class FriendModel {
     return null;
   }
 
-  bool get isPending => status == FriendStatus.pending;
+  bool get isPending {
+    return status == FriendStatus.pending;
+  }
 
-  bool get isAccepted => status == FriendStatus.accepted;
+  bool get isAccepted {
+    return status == FriendStatus.accepted;
+  }
 
-  bool get isRejected => status == FriendStatus.rejected;
+  bool get isRejected {
+    return status == FriendStatus.rejected;
+  }
 
-  bool get isBlocked => status == FriendStatus.blocked;
+  bool get isBlocked {
+    return status == FriendStatus.blocked;
+  }
 
   @override
   String toString() {
