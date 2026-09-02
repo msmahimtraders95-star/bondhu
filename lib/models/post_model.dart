@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum PostType {
   text,
   image,
@@ -11,19 +9,14 @@ class PostModel {
   final String userId;
   final String userName;
   final String? userProfileImageUrl;
-
   final String content;
   final PostType type;
-
   final String? mediaUrl;
   final String? thumbnailUrl;
-
   final int likesCount;
   final int commentsCount;
   final int sharesCount;
-
   final bool isLiked;
-
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
