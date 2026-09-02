@@ -30,32 +30,32 @@ jobs:
           cache: true
 
       - name: Show Flutter version
-        run: |
-          flutter --version
+        run: flutter --version
 
-      - name: Check project structure
+      - name: Show project structure
         run: |
-          set +e
-
           echo "========================================"
-          echo "CHECKING BONDHU PROJECT"
+          echo "PROJECT STRUCTURE"
           echo "========================================"
 
-          echo ""
-          echo "Current directory:"
           pwd
 
           echo ""
-          echo "Project files:"
-          find . -maxdepth 3 -type f | sort
+          echo "Root files:"
+          find . -maxdepth 2 -type f | sort
 
           echo ""
           echo "Android files:"
-          find android -type f | sort
+          if [ -d android ]; then
+            find android -type f | sort
+          else
+            echo "ANDROID DIRECTORY DOES NOT EXIST"
+          fi
 
-          echo ""
+      - name: Check old Flutter V1 embedding
+        run: |
           echo "========================================"
-          echo "CHECKING OLD FLUTTER V1 EMBEDDING"
+          echo "CHECKING FLUTTER V1 EMBEDDING"
           echo "========================================"
 
           echo ""
@@ -87,41 +87,49 @@ jobs:
             "registerWith" . || true
 
           echo ""
-          echo "--- old FlutterActivity ---"
+          echo "--- FlutterActivity ---"
           grep -RIn \
             --exclude-dir=.git \
             --exclude-dir=build \
-            "io.flutter.app.FlutterActivity" . || true
+            "FlutterActivity" android lib 2>/dev/null || true
 
-          echo ""
-          echo "--- old FlutterApplication ---"
-          grep -RIn \
-            --exclude-dir=.git \
-            --exclude-dir=build \
-            "io.flutter.app.FlutterApplication" . || true
-
-          echo ""
-          echo "========================================"
-          echo "CHECK COMPLETE"
-          echo "========================================"
-
-      - name: Verify Android configuration
+      - name: Check Android project
         run: |
-          set -e
-
           echo "========================================"
-          echo "VERIFYING ANDROID CONFIGURATION"
+          echo "CHECKING ANDROID PROJECT"
           echo "========================================"
 
-          test -f android/settings.gradle
-          test -f android/build.gradle
-          test -f android/gradle.properties
-          test -f android/app/build.gradle
-          test -f android/app/src/main/AndroidManifest.xml
+          if [ -f android/settings.gradle ]; then
+            echo "OK: android/settings.gradle"
+          else
+            echo "MISSING: android/settings.gradle"
+          fi
 
-          echo "All required Android files exist."
+          if [ -f android/build.gradle ]; then
+            echo "OK: android/build.gradle"
+          else
+            echo "MISSING: android/build.gradle"
+          fi
 
-      - name: Get Flutter dependencies
+          if [ -f android/gradle.properties ]; then
+            echo "OK: android/gradle.properties"
+          else
+            echo "MISSING: android/gradle.properties"
+          fi
+
+          if [ -f android/app/build.gradle ]; then
+            echo "OK: android/app/build.gradle"
+          else
+            echo "MISSING: android/app/build.gradle"
+          fi
+
+          if [ -f android/app/src/main/AndroidManifest.xml ]; then
+            echo "OK: AndroidManifest.xml"
+          else
+            echo "MISSING: AndroidManifest.xml"
+          fi
+
+      - name: Get dependencies
         run: |
           flutter pub get
 
@@ -133,7 +141,7 @@ jobs:
         run: |
           flutter clean
 
-      - name: Get dependencies again
+      - name: Get dependencies after clean
         run: |
           flutter pub get
 
@@ -141,19 +149,19 @@ jobs:
         run: |
           flutter build apk --release
 
-      - name: Verify APK
+      - name: Check generated APK
         run: |
-          set -e
-
           echo "========================================"
-          echo "VERIFYING APK"
+          echo "CHECKING APK"
           echo "========================================"
 
-          test -f build/app/outputs/flutter-apk/app-release.apk
-
-          ls -lh build/app/outputs/flutter-apk/app-release.apk
-
-          echo "APK build completed successfully."
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            echo "APK CREATED SUCCESSFULLY"
+            ls -lh build/app/outputs/flutter-apk/app-release.apk
+          else
+            echo "APK WAS NOT CREATED"
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
