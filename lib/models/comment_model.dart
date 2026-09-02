@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class CommentModel {
   final String id;
   final String postId;
@@ -76,6 +74,7 @@ class CommentModel {
           map['userProfileImageUrl'] as String?,
       text: map['text'] as String? ?? '',
       likesCount: _toInt(map['likesCount']),
+      isLiked: map['isLiked'] as bool? ?? false,
       createdAt: _toDateTime(map['createdAt']),
       updatedAt: _toDateTime(map['updatedAt']),
     );
