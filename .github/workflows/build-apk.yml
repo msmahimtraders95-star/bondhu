@@ -29,57 +29,131 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
+      - name: Show Flutter version
+        run: |
+          flutter --version
 
-      - name: Check Android V1 embedding
+      - name: Check project structure
         run: |
           set +e
 
           echo "========================================"
-          echo "SEARCHING FOR ANDROID V1 EMBEDDING"
+          echo "CHECKING BONDHU PROJECT"
           echo "========================================"
 
           echo ""
-          echo "Searching for io.flutter.app..."
-          grep -RIn --exclude-dir=.git "io.flutter.app" . || true
+          echo "Current directory:"
+          pwd
 
           echo ""
-          echo "Searching for GeneratedPluginRegistrant..."
-          grep -RIn --exclude-dir=.git "GeneratedPluginRegistrant" . || true
+          echo "Project files:"
+          find . -maxdepth 3 -type f | sort
 
           echo ""
-          echo "Searching for PluginRegistry.Registrar..."
-          grep -RIn --exclude-dir=.git "PluginRegistry.Registrar" . || true
-
-          echo ""
-          echo "Searching for registerWith..."
-          grep -RIn --exclude-dir=.git "registerWith" . || true
-
-          echo ""
-          echo "Searching for old FlutterActivity..."
-          grep -RIn --exclude-dir=.git "FlutterActivity" android || true
-
-          echo ""
-          echo "========================================"
-          echo "ANDROID DIRECTORY"
-          echo "========================================"
-
+          echo "Android files:"
           find android -type f | sort
 
           echo ""
           echo "========================================"
-          echo "V1 SEARCH COMPLETED"
+          echo "CHECKING OLD FLUTTER V1 EMBEDDING"
           echo "========================================"
 
-      - name: Get dependencies
-        run: flutter pub get
+          echo ""
+          echo "--- io.flutter.app ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "io.flutter.app" . || true
 
-      - name: Analyze project
-        run: flutter analyze
+          echo ""
+          echo "--- GeneratedPluginRegistrant ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "GeneratedPluginRegistrant" . || true
+
+          echo ""
+          echo "--- PluginRegistry.Registrar ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "PluginRegistry.Registrar" . || true
+
+          echo ""
+          echo "--- registerWith ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "registerWith" . || true
+
+          echo ""
+          echo "--- old FlutterActivity ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "io.flutter.app.FlutterActivity" . || true
+
+          echo ""
+          echo "--- old FlutterApplication ---"
+          grep -RIn \
+            --exclude-dir=.git \
+            --exclude-dir=build \
+            "io.flutter.app.FlutterApplication" . || true
+
+          echo ""
+          echo "========================================"
+          echo "CHECK COMPLETE"
+          echo "========================================"
+
+      - name: Verify Android configuration
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "VERIFYING ANDROID CONFIGURATION"
+          echo "========================================"
+
+          test -f android/settings.gradle
+          test -f android/build.gradle
+          test -f android/gradle.properties
+          test -f android/app/build.gradle
+          test -f android/app/src/main/AndroidManifest.xml
+
+          echo "All required Android files exist."
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter pub get
+
+      - name: Flutter analyze
+        run: |
+          flutter analyze
+
+      - name: Flutter clean
+        run: |
+          flutter clean
+
+      - name: Get dependencies again
+        run: |
+          flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release
+
+      - name: Verify APK
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "VERIFYING APK"
+          echo "========================================"
+
+          test -f build/app/outputs/flutter-apk/app-release.apk
+
+          ls -lh build/app/outputs/flutter-apk/app-release.apk
+
+          echo "APK build completed successfully."
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
