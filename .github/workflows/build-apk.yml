@@ -32,6 +32,46 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
+      - name: Check Android V1 embedding
+        run: |
+          set +e
+
+          echo "========================================"
+          echo "SEARCHING FOR ANDROID V1 EMBEDDING"
+          echo "========================================"
+
+          echo ""
+          echo "Searching for io.flutter.app..."
+          grep -RIn --exclude-dir=.git "io.flutter.app" . || true
+
+          echo ""
+          echo "Searching for GeneratedPluginRegistrant..."
+          grep -RIn --exclude-dir=.git "GeneratedPluginRegistrant" . || true
+
+          echo ""
+          echo "Searching for PluginRegistry.Registrar..."
+          grep -RIn --exclude-dir=.git "PluginRegistry.Registrar" . || true
+
+          echo ""
+          echo "Searching for registerWith..."
+          grep -RIn --exclude-dir=.git "registerWith" . || true
+
+          echo ""
+          echo "Searching for old FlutterActivity..."
+          grep -RIn --exclude-dir=.git "FlutterActivity" android || true
+
+          echo ""
+          echo "========================================"
+          echo "ANDROID DIRECTORY"
+          echo "========================================"
+
+          find android -type f | sort
+
+          echo ""
+          echo "========================================"
+          echo "V1 SEARCH COMPLETED"
+          echo "========================================"
+
       - name: Get dependencies
         run: flutter pub get
 
