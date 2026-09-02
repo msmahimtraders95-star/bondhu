@@ -28,7 +28,7 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Check Flutter
+      - name: Check Flutter and Java
         run: |
           set -e
 
@@ -60,10 +60,6 @@ jobs:
       - name: Remove default Flutter test
         run: |
           set -e
-
-          echo "========================================"
-          echo "REMOVING DEFAULT TEST"
-          echo "========================================"
 
           rm -f test/widget_test.dart
 
@@ -97,6 +93,15 @@ jobs:
                   versionName = '1.0.1'
               }
 
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+
               signingConfigs {
                   release {
                       storeFile file("${rootProject.projectDir}/bondhu-release-key.jks")
@@ -122,6 +127,23 @@ jobs:
 
           echo "Android application configured."
 
+      - name: Configure Gradle JVM
+        run: |
+          set -e
+
+          echo "========================================"
+          echo "CONFIGURING GRADLE JVM"
+          echo "========================================"
+
+          cat > android/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx4G -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.enableJetifier=true
+          org.gradle.java.home=/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.*/x64
+          EOF
+
+          echo "Gradle JVM configuration completed."
+
       - name: Create release signing key
         run: |
           set -e
@@ -142,7 +164,7 @@ jobs:
             -keypass BondhuRelease2026 \
             -dname "CN=Bondhu, OU=Bondhu, O=Bondhu, L=Dhaka, ST=Dhaka, C=BD"
 
-          echo "Release signing key created."
+          echo "Release signing key created successfully."
 
       - name: Verify Android configuration
         run: |
@@ -185,12 +207,31 @@ jobs:
           echo "Minimum SDK verified."
 
           echo ""
-          echo "Checking version..."
+          echo "Checking Java JVM target..."
+
+          grep -q "sourceCompatibility JavaVersion.VERSION_17" \
+            android/app/build.gradle
+
+          grep -q "targetCompatibility JavaVersion.VERSION_17" \
+            android/app/build.gradle
+
+          echo "Java JVM target 17 verified."
+
+          echo ""
+          echo "Checking Kotlin JVM target..."
+
+          grep -q "jvmTarget = '17'" \
+            android/app/build.gradle
+
+          echo "Kotlin JVM target 17 verified."
+
+          echo ""
+          echo "Checking application version..."
 
           grep -q "versionName = '1.0.1'" \
             android/app/build.gradle
 
-          echo "Version verified."
+          echo "Application version verified."
 
           echo ""
           echo "========================================"
@@ -232,7 +273,7 @@ jobs:
             --release \
             --target-platform android-arm,android-arm64
 
-          echo "Release APK build completed."
+          echo "Release APK build completed successfully."
 
       - name: Verify APK exists
         run: |
@@ -276,7 +317,7 @@ jobs:
 
           "$ZIPALIGN" -c -v 4 "$APK"
 
-          echo "APK alignment verified."
+          echo "APK alignment verified successfully."
 
       - name: Verify APK signature
         run: |
@@ -302,7 +343,7 @@ jobs:
 
           "$APKSIGNER" verify --verbose "$APK"
 
-          echo "APK signature verified."
+          echo "APK signature verified successfully."
 
       - name: Show APK information
         run: |
@@ -314,7 +355,7 @@ jobs:
 
           APK="build/app/outputs/flutter-apk/app-release.apk"
 
-          echo "File:"
+          echo "APK file:"
           ls -lh "$APK"
 
           echo ""
