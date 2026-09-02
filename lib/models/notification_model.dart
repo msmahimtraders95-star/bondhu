@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 enum NotificationType {
   friendRequest,
   friendAccepted,
@@ -150,6 +148,7 @@ class NotificationModel {
         'id: $id, '
         'userId: $userId, '
         'senderId: $senderId, '
+        'senderName: $senderName, '
         'title: $title, '
         'type: ${type.name}, '
         'isRead: $isRead'
@@ -167,7 +166,8 @@ class NotificationModel {
         other.userId == userId &&
         other.senderId == senderId &&
         other.senderName == senderName &&
-        other.senderProfileImageUrl == senderProfileImageUrl &&
+        other.senderProfileImageUrl ==
+            senderProfileImageUrl &&
         other.title == title &&
         other.message == message &&
         other.type == type &&
