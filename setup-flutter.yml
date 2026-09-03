@@ -1,0 +1,4 @@
+name: Setup Bondhu Flutter Project
+
+on:
+  workflow_dispatch:
