@@ -2,6 +2,9 @@ name: Setup Bondhu Flutter Project
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -25,6 +28,14 @@ jobs:
             --project-name bondhu \
             --org com.bondhu \
             .
+
+      - name: Restore Firebase configuration
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            echo "Firebase configuration found."
+          else
+            echo "Firebase configuration not found."
+          fi
 
       - name: Commit Flutter project
         run: |
